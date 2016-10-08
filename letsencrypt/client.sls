@@ -62,7 +62,7 @@ letsencrypt-client-git:
 create-initial-cert-{{ setname }}-{{ domainlist[0] }}:
   cmd.run:
     - unless: /usr/local/bin/check_letsencrypt_cert.sh {{ domainlist|join(' ') }}
-    - name: {{ client.cli_install_dir }}/letsencrypt-auto certonly -d {{ domainlist|join(' -d ') }}
+    - name: {{ client.cli_install_dir }}/letsencrypt-auto certonly --non-interactive -d {{ domainlist|join(' -d ') }}
     - require:
       - file: letsencrypt-config
 
@@ -70,7 +70,7 @@ letsencrypt-crontab-{{ setname }}-{{ domainlist[0] }}:
   cron.present:
     - name: /usr/local/bin/check_letsencrypt_cert.sh {{ domainlist|join(' ') }} > /dev/null ||{{
           client.cli_install_dir
-        }}/letsencrypt-auto -d {{ domainlist|join(' -d ') }} certonly
+        }}/letsencrypt-auto -d {{ domainlist|join(' -d ') }} certonly --non-interactive
     - month: '*'
     - minute: random
     - hour: random
