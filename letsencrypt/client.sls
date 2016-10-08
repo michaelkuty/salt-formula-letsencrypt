@@ -2,6 +2,30 @@
 
 {%- if client.enabled %}
 
+{%- if client.remote is defined %}
+
+{% for domain_name, domain for client.remote %}
+
+letsencrypt_certificate_dir:
+  file.directory:
+  - names:
+    - /etc/letsencrypt/live/{{ domain.name }}
+  - makedirs: true
+
+letsencrypt_certificate_fullchain:
+  file.managed:
+  - name: /etc/letsencrypt/live/{{ domain.name }}/fullchain.pem
+  - source: salt://letsencrypt/files/{{ domain.name }}_fullchain.pem
+
+letsencrypt_certificate_privkey:
+  file.managed:
+  - name: /etc/letsencrypt/live/{{ domain.name }}/privkey.pem
+  - source: salt://letsencrypt/files/{{ domain.name }}_privkey.pem
+
+{%- endfor %}
+
+{%- else %}
+
 letsencrypt-packages:
   pkg.installed:
   - names: {{ client.pkgs }}
@@ -54,6 +78,17 @@ letsencrypt-crontab-{{ setname }}-{{ domainlist[0] }}:
     - identifier: letsencrypt-{{ setname }}-{{ domainlist[0] }}
     - require:
       - cmd: create-initial-cert-{{ setname }}-{{ domainlist[0] }}
+
+/etc/letsencrypt/live/{{ domainlist[0] }}/fullchain.pem:
+  file.symlink:
+    - target: /srv/salt/env/dev/letsencrypt/letsencrypt/files/{{ domainlist[0] }}_fullchain.pem
+
+/etc/letsencrypt/live/{{ domainlist[0] }}/privkey.pem:
+  file.symlink:
+    - target: /srv/salt/env/dev/letsencrypt/letsencrypt/files/{{ domainlist[0] }}_privkey.pem
+
 {% endfor %}
+
+{%- endif %}
 
 {%- endif %}
