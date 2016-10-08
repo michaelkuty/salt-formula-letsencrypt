@@ -4,7 +4,7 @@
 
 {%- if client.remote is defined %}
 
-{% for domain_name, domain for client.remote.iteritems() %}
+{% for domain_name, domain in client.remote.iteritems() %}
 
 letsencrypt_certificate_dir:
   file.directory:
