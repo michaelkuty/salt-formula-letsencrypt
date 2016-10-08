@@ -79,13 +79,13 @@ letsencrypt-crontab-{{ setname }}-{{ domainlist[0] }}:
     - require:
       - cmd: create-initial-cert-{{ setname }}-{{ domainlist[0] }}
 
-/etc/letsencrypt/live/{{ domainlist[0] }}/fullchain.pem:
+/srv/salt/env/dev/letsencrypt/letsencrypt/files/{{ domainlist[0] }}_fullchain.pem:
   file.symlink:
-    - target: /srv/salt/env/dev/letsencrypt/letsencrypt/files/{{ domainlist[0] }}_fullchain.pem
+    - target: /etc/letsencrypt/live/{{ domainlist[0] }}/fullchain.pem
 
-/etc/letsencrypt/live/{{ domainlist[0] }}/privkey.pem:
+/srv/salt/env/dev/letsencrypt/letsencrypt/files/{{ domainlist[0] }}_privkey.pem:
   file.symlink:
-    - target: /srv/salt/env/dev/letsencrypt/letsencrypt/files/{{ domainlist[0] }}_privkey.pem
+    - target: /etc/letsencrypt/live/{{ domainlist[0] }}/privkey.pem
 
 {% endfor %}
 
