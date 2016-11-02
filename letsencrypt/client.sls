@@ -2,6 +2,30 @@
 
 {%- if client.enabled %}
 
+{%- if client.remote is defined %}
+
+{% for domain_name, domain in client.remote.iteritems() %}
+
+letsencrypt_certificate_dir:
+  file.directory:
+  - names:
+    - /etc/letsencrypt/live/{{ domain.name }}
+  - makedirs: true
+
+letsencrypt_certificate_fullchain:
+  file.managed:
+  - name: /etc/letsencrypt/live/{{ domain.name }}/fullchain.pem
+  - source: salt://letsencrypt/files/{{ domain.name }}_fullchain.pem
+
+letsencrypt_certificate_privkey:
+  file.managed:
+  - name: /etc/letsencrypt/live/{{ domain.name }}/privkey.pem
+  - source: salt://letsencrypt/files/{{ domain.name }}_privkey.pem
+
+{%- endfor %}
+
+{%- else %}
+
 letsencrypt-packages:
   pkg.installed:
   - names: {{ client.pkgs }}
@@ -38,7 +62,7 @@ letsencrypt-client-git:
 create-initial-cert-{{ setname }}-{{ domainlist[0] }}:
   cmd.run:
     - unless: /usr/local/bin/check_letsencrypt_cert.sh {{ domainlist|join(' ') }}
-    - name: {{ client.cli_install_dir }}/letsencrypt-auto -d {{ domainlist|join(' -d ') }} certonly
+    - name: {{ client.cli_install_dir }}/letsencrypt-auto certonly --non-interactive --allow-subset-of-names -d {{ domainlist|join(' -d ') }}
     - require:
       - file: letsencrypt-config
 
@@ -46,7 +70,7 @@ letsencrypt-crontab-{{ setname }}-{{ domainlist[0] }}:
   cron.present:
     - name: /usr/local/bin/check_letsencrypt_cert.sh {{ domainlist|join(' ') }} > /dev/null ||{{
           client.cli_install_dir
-        }}/letsencrypt-auto -d {{ domainlist|join(' -d ') }} certonly
+        }}/letsencrypt-auto -d {{ domainlist|join(' -d ') }} certonly --allow-subset-of-names --non-interactive
     - month: '*'
     - minute: random
     - hour: random
@@ -54,6 +78,17 @@ letsencrypt-crontab-{{ setname }}-{{ domainlist[0] }}:
     - identifier: letsencrypt-{{ setname }}-{{ domainlist[0] }}
     - require:
       - cmd: create-initial-cert-{{ setname }}-{{ domainlist[0] }}
+
+/srv/salt/env/dev/letsencrypt/files/{{ domainlist[0] }}_fullchain.pem:
+  file.symlink:
+    - target: /etc/letsencrypt/live/{{ domainlist[0] }}/fullchain.pem
+
+/srv/salt/env/dev/letsencrypt/files/{{ domainlist[0] }}_privkey.pem:
+  file.symlink:
+    - target: /etc/letsencrypt/live/{{ domainlist[0] }}/privkey.pem
+
 {% endfor %}
+
+{%- endif %}
 
 {%- endif %}
