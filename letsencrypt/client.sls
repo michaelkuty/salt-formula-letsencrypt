@@ -22,6 +22,11 @@ letsencrypt_certificate_privkey:
   - name: /etc/letsencrypt/live/{{ domain.name }}/privkey.pem
   - source: salt://letsencrypt/files/{{ domain.name }}_privkey.pem
 
+letsencrypt_certificate_cert:
+  file.managed:
+  - name: /etc/letsencrypt/live/{{ domain.name }}/cert.pem
+  - source: salt://letsencrypt/files/{{ domain.name }}_cert.pem
+
 {%- endfor %}
 
 {%- else %}
@@ -86,6 +91,10 @@ letsencrypt-crontab-{{ setname }}-{{ domainlist[0] }}:
 /srv/salt/env/dev/letsencrypt/files/{{ domainlist[0] }}_privkey.pem:
   file.symlink:
     - target: /etc/letsencrypt/live/{{ domainlist[0] }}/privkey.pem
+
+/srv/salt/env/dev/letsencrypt/files/{{ domainlist[0] }}_cert.pem:
+  file.symlink:
+    - target: /etc/letsencrypt/live/{{ domainlist[0] }}/cert.pem
 
 {% endfor %}
 
